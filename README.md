@@ -1,8 +1,6 @@
 
 # Reddit User Persona Generator
 
-![Project Screenshot](screenshot.png) <!-- Add a screenshot if available -->
-
 A powerful tool that generates detailed user personas from Reddit profiles by analyzing their posts and comments using natural language processing and AI models.
 
 ---
