@@ -1,0 +1,23 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.so
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Temporary uploads
+temp_uploads/
+
+# Streamlit or Flask temp
+*.log
+*.sqlite3
+*.db
+
+# VS Code / IDE config
+.vscode/
+.idea/
+
+# Ignore debug or temp scripts and outputs
+temp_debug/

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ persona.username }} - Persona</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: white;
+        }
+        .persona-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: visible;
+            width: 1600px;
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            min-height: 600px;
+        }
+        .left-panel {
+            background: linear-gradient(135deg, #8B7355 0%, #A0926B 100%);
+            padding: 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .profile-image {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+            object-position: center;
+        }
+        .quote-section {
+            background: rgba(255, 87, 51, 0.9);
+            color: white;
+            padding: 30px;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+        }
+        .quote-section p {
+            font-size: 18px;
+            line-height: 1.4;
+            font-weight: 300;
+        }
+        .right-panel {
+            padding: 30px;
+            background: white;
+        }
+        .header {
+            margin-bottom: 30px;
+        }
+        .name {
+            font-size: 32px;
+            font-weight: 700;
+            color: #FF5733;
+            margin-bottom: 20px;
+        }
+        .basic-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+        .info-item {
+            display: flex;
+            align-items: center;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #666;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 80px;
+            margin-right: 15px;
+        }
+        .info-value {
+            color: #333;
+            font-size: 14px;
+        }
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #FF5733;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+        .motivation-bars {
+            margin-bottom: 20px;
+        }
+        .motivation-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .motivation-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 100px;
+            margin-right: 15px;
+        }
+        .progress-bar {
+            flex: 1;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #333;
+            border-radius: 4px;
+        }
+        .personality-trait {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .trait-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 80px;
+            margin-right: 15px;
+        }
+        .trait-scale {
+            flex: 1;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            position: relative;
+        }
+        .trait-indicator {
+            position: absolute;
+            top: -2px;
+            width: 12px;
+            height: 12px;
+            background: #333;
+            border-radius: 50%;
+            transform: translateX(-50%);
+        }
+        .behavior-list, .frustration-list, .goals-list {
+            list-style: none;
+        }
+        .behavior-list li, .frustration-list li, .goals-list li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+        }
+        .behavior-list li:before, .frustration-list li:before, .goals-list li:before {
+            content: "●";
+            position: absolute;
+            left: 0;
+            color: #FF5733;
+            font-size: 16px;
+        }
+        .personality-tags {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .tag {
+            background: #e0e0e0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #666;
+        }
+        .download-section {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .download-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+        }
+        .back-btn {
+            display: inline-block;
+            margin-top: 15px;
+            color: #FF5733;
+            text-decoration: none;
+            font-weight: 500;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="persona-card">
+        <div class="left-panel">
+            <img src="{{ persona.photo }}" alt="{{ persona.username }}" class="profile-image">
+            
+            <div class="quote-section">
+                <p>"{{ persona.quote }}"</p>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="header">
+                <h1 class="name">{{ persona.name or persona.username }}</h1>
+                
+                <div class="basic-info">
+                    <div class="info-item">
+                        <span class="info-label">AGE</span>
+                        <span class="info-value">{{ persona.age or 'Unknown' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">OCCUPATION</span>
+                        <span class="info-value">{{ persona.occupation or 'Unknown' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">STATUS</span>
+                        <span class="info-value">{{ persona.status or 'Unknown' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">LOCATION</span>
+                        <span class="info-value">{{ persona.location or 'Unknown' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">TIER</span>
+                        <span class="info-value">{{ persona.tube or 'Unknown' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">ARCHETYPE</span>
+                        <span class="info-value">{{ persona.archetype or 'Unknown' }}</span>
+                    </div>
+                </div>
+
+                <div class="personality-tags">
+                    {% if persona.primary_traits %}
+                        {% for trait in persona.primary_traits.split(',') %}
+                            <span class="tag">{{ trait.strip() }}</span>
+                        {% endfor %}
+                    {% endif %}
+                    {% if persona.secondary_traits %}
+                        {% for trait in persona.secondary_traits.split(',') %}
+                            <span class="tag">{{ trait.strip() }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="content-grid">
+                <div class="left-content">
+                    <div class="section">
+                        <h2 class="section-title">Motivations</h2>
+                        <div class="motivation-bars">
+                            {% for motivation in persona.motivations %}
+                            <div class="motivation-item">
+                                <span class="motivation-label">{{ motivation.split(':')[0].upper() if ':' in motivation else 'MOTIVATION' }}</span>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: {{ loop.index * 15 + 30 }}%"></div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h2 class="section-title">Personality</h2>
+                        <div class="personality-trait">
+                            <span class="trait-label">INTROVERT</span>
+                            <div class="trait-scale">
+                                <div class="trait-indicator" style="left: 25%"></div>
+                            </div>
+                            <span class="trait-label">EXTROVERT</span>
+                        </div>
+                        <div class="personality-trait">
+                            <span class="trait-label">INTUITION</span>
+                            <div class="trait-scale">
+                                <div class="trait-indicator" style="left: 80%"></div>
+                            </div>
+                            <span class="trait-label">SENSING</span>
+                        </div>
+                        <div class="personality-trait">
+                            <span class="trait-label">FEELING</span>
+                            <div class="trait-scale">
+                                <div class="trait-indicator" style="left: 70%"></div>
+                            </div>
+                            <span class="trait-label">THINKING</span>
+                        </div>
+                        <div class="personality-trait">
+                            <span class="trait-label">PERCEIVING</span>
+                            <div class="trait-scale">
+                                <div class="trait-indicator" style="left: 85%"></div>
+                            </div>
+                            <span class="trait-label">JUDGING</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="right-content">
+                    <div class="section">
+                        <h2 class="section-title">Behaviour & Habits</h2>
+                        <ul class="behavior-list">
+                            {% for behavior in persona.behavior %}
+                            <li>{{ behavior }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div class="section">
+                        <h2 class="section-title">Frustrations</h2>
+                        <ul class="frustration-list">
+                            {% for frustration in persona.frustrations %}
+                            <li>{{ frustration }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div class="section">
+                        <h2 class="section-title">Goals & Needs</h2>
+                        <ul class="goals-list">
+                            {% for goal in persona.goals %}
+                            <li>{{ goal }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="download-section">
+                <a href="/download/{{ persona.id }}/pdf" class="download-btn">Download as PDF</a>
+                <a href="/download/{{ persona.id }}/jpg" class="download-btn">Download as Image</a>
+                <a href="/download/{{ persona.id }}/json" class="download-btn">Download as JSON</a>
+                <br>
+                <a href="/" class="back-btn">← Generate another persona</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

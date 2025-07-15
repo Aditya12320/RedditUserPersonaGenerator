@@ -1,0 +1,698 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reddit User Persona Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #ff5722;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .generator-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .input-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .output-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow-y: auto;
+            max-height: 80vh;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #555;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #ff5722;
+        }
+
+        button {
+            background-color: #ff5722;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #e64a19;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #ff5722;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #error-message {
+            color: red;
+            margin-top: 20px;
+            display: none;
+        }
+
+        #persona-container {
+            display: none;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Reddit User Persona Generator</h1>
+            <p class="subtitle">Generate detailed user personas from Reddit profiles</p>
+        </header>
+
+        <div class="input-section">
+            <div class="form-group">
+                <label for="username">Reddit Username</label>
+                <input type="text" id="username" name="username" placeholder="e.g., Hungry-Move-6603" required>
+            </div>
+            
+            <button id="generate-btn">Generate Persona</button>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Generating persona...</p>
+            </div>
+            
+            <div id="error-message"></div>
+        </div>
+
+        <div id="persona-container" style="display: none;">
+
+        </div>
+    </div>
+
+    <script>
+        // Add at the beginning of your script section
+        const elements = {
+            container: document.getElementById('persona-container'),
+            usernameInput: document.getElementById('username'),
+            generateBtn: document.getElementById('generate-btn'),
+            loading: document.getElementById('loading'),
+            error: document.getElementById('error-message')
+        };
+        let debounceTimer;
+        elements.generateBtn.addEventListener('click', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const username = elements.usernameInput.value.trim();
+                if (username) generatePersona(username);
+            }, 300);
+        });
+
+        document.getElementById('generate-btn').addEventListener('click', async function() {
+            const username = document.getElementById('username').value.trim();
+            if (!username) {
+                showError('Username is required');
+                return;
+            }
+
+            // Show loading spinner
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error-message').style.display = 'none';
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `username=${encodeURIComponent(username)}`
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to generate persona');
+                }
+
+                const personaData = await response.json();
+                displayPersona(personaData);
+                
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        });
+
+        function showError(message) {
+            const errorElement = document.getElementById('error-message');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+        function generateAvatar(username) {
+            const colors = ['#8B7355', '#FF5733', '#4CAF50', '#2196F3'];
+            const hash = username.split('').reduce((acc, char) => char.charCodeAt(0) + acc, 0);
+            const color = colors[hash % colors.length];
+            
+            return `data:image/svg+xml;base64,${btoa(`
+                <svg width="400" height="280" viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="400" height="280" fill="${color}"/>
+                    <circle cx="200" cy="140" r="80" fill="#FFF"/>
+                    <text x="200" y="150" font-family="Arial" font-size="80" fill="${color}" 
+                        text-anchor="middle" dominant-baseline="middle">
+                        ${(username || 'US').substring(0, 2).toUpperCase()}
+                    </text>
+                </svg>
+            `)}`;
+        }
+
+
+        function displayPersona(personaData) {
+            if (!personaData || typeof personaData !== 'object') {
+                showError('Invalid persona data received');
+                return;
+            }
+
+            const container = document.getElementById('persona-container');
+
+            const displayName = personaData.name || personaData.username || 'Unknown';
+            // Safely get the username or default to 'US'
+            const username = personaData.username || 'US';
+            const initials = username.substring(0, 2).toUpperCase();
+            
+            // Ensure photo is properly set
+            const photoUrl = personaData.photo || generateAvatar(personaData.username);
+
+            // Create the persona card HTML
+            container.innerHTML = `
+                <div class="persona-card">
+                    <div class="left-panel">
+                        <img src="${photoUrl}" alt="${username}" class="profile-image" 
+                            onerror="this.onerror=null;this.src='data:image/svg+xml;base64,${btoa(`
+                                <svg width="400" height="280" viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">
+                                    <rect width="400" height="280" fill="#8B7355"/>
+                                    <circle cx="200" cy="140" r="80" fill="#FFF"/>
+                                    <text x="200" y="150" font-family="Arial" font-size="80" fill="#8B7355" 
+                                        text-anchor="middle" dominant-baseline="middle">
+                                        ${initials}
+                                    </text>
+                                </svg>
+                            `)}'">
+                        <div class="quote-section">
+                            <p>"${personaData.quote || 'No representative quote available'}"</p>
+                        </div>
+                    </div>
+
+
+                    <div class="right-panel">
+                        <div class="header">
+                            <h1 class="name">${displayName}</h1>
+                            
+                            <div class="basic-info">
+                                <div class="info-item">
+                                    <span class="info-label">AGE</span>
+                                    <span class="info-value">${personaData.age || 'Unknown'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">OCCUPATION</span>
+                                    <span class="info-value">${personaData.occupation || 'Unknown'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">STATUS</span>
+                                    <span class="info-value">${personaData.status || 'Unknown'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">LOCATION</span>
+                                    <span class="info-value">${personaData.location || 'Unknown'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">TIER</span>
+                                    <span class="info-value">${personaData.tube || 'Unknown'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">ARCHETYPE</span>
+                                    <span class="info-value">${personaData.archetype || 'Unknown'}</span>
+                                </div>
+                            </div>
+
+                            <div class="personality-tags">
+                                ${(personaData.primary_traits ? personaData.primary_traits.split(',').map(trait => 
+                                    `<span class="tag">${trait.trim()}</span>`
+                                ).join('') : '')}
+                                ${(personaData.secondary_traits ? personaData.secondary_traits.split(',').map(trait => 
+                                    `<span class="tag">${trait.trim()}</span>`
+                                ).join('') : '')}
+                            </div>
+                        </div>
+
+                        <div class="content-grid">
+                            <div class="left-content">
+                                <div class="section">
+                                    <h2 class="section-title">Motivations</h2>
+                                    <div class="motivation-bars">
+                                        ${(personaData.motivations || []).map((motivation, index) => `
+                                            <div class="motivation-item">
+                                                <span class="motivation-label">${motivation.split(':')[0]?.toUpperCase() || 'MOTIVATION'}</span>
+                                                <div class="progress-bar">
+                                                    <div class="progress-fill" style="width: ${(index + 1) * 15 + 30}%"></div>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+
+                                <div class="section">
+                                    <h2 class="section-title">Personality</h2>
+                                    <div class="personality-trait">
+                                        <span class="trait-label">INTROVERT</span>
+                                        <div class="trait-scale">
+                                            <div class="trait-indicator" style="left: 25%"></div>
+                                        </div>
+                                        <span class="trait-label">EXTROVERT</span>
+                                    </div>
+                                    <div class="personality-trait">
+                                        <span class="trait-label">INTUITION</span>
+                                        <div class="trait-scale">
+                                            <div class="trait-indicator" style="left: 80%"></div>
+                                        </div>
+                                        <span class="trait-label">SENSING</span>
+                                    </div>
+                                    <div class="personality-trait">
+                                        <span class="trait-label">FEELING</span>
+                                        <div class="trait-scale">
+                                            <div class="trait-indicator" style="left: 70%"></div>
+                                        </div>
+                                        <span class="trait-label">THINKING</span>
+                                    </div>
+                                    <div class="personality-trait">
+                                        <span class="trait-label">PERCEIVING</span>
+                                        <div class="trait-scale">
+                                            <div class="trait-indicator" style="left: 85%"></div>
+                                        </div>
+                                        <span class="trait-label">JUDGING</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="right-content">
+                                <div class="section">
+                                    <h2 class="section-title">Behaviour & Habits</h2>
+                                    <ul class="behavior-list">
+                                        ${(personaData.behavior || []).map(behavior => `
+                                            <li>${behavior}</li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+
+                                <div class="section">
+                                    <h2 class="section-title">Frustrations</h2>
+                                    <ul class="frustration-list">
+                                        ${(personaData.frustrations || []).map(frustration => `
+                                            <li>${frustration}</li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+
+                                <div class="section">
+                                    <h2 class="section-title">Goals & Needs</h2>
+                                    <ul class="goals-list">
+                                        ${(personaData.goals || []).map(goal => `
+                                            <li>${goal}</li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                    <div class="download-section">
+                            <button onclick="downloadPersona('${personaData.id}', 'pdf')" class="download-btn">Download as PDF</button>
+                            <button onclick="downloadPersona('${personaData.id}', 'jpg')" class="download-btn">Download as Image</button>
+                            <button onclick="downloadPersona('${personaData.id}', 'json')" class="download-btn">Download as JSON</button>
+                            <br>
+                            <button onclick="location.reload()" class="back-btn">← Generate another persona</button>
+                        </div>
+                    </div>
+                `;
+
+            
+            // Add the persona card styles
+            const style = document.createElement('style');
+            style.textContent = `
+                .persona-card {
+                    background: white;
+                    border-radius: 12px;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+                    overflow: hidden;
+                    max-width: 100%;
+                    margin: 0 auto;
+                    display: grid;
+                    grid-template-columns: 400px 1fr;
+                    min-height: 600px;
+                }
+
+                .left-panel {
+                    position: relative;
+                    overflow: hidden;
+                    background: linear-gradient(135deg, #8B7355 0%, #A0926B 100%);
+                }
+
+                .profile-image {
+                    width: 100%;
+                    height: 280px;
+                    object-fit: cover;
+                    object-position: center;
+                    background-color: #8B7355; /* Fallback color */
+                }
+
+                .quote-section {
+                    background: rgba(255, 87, 51, 0.9);
+                    color: white;
+                    padding: 30px;
+                    position: absolute;
+                    bottom: 0;
+                    left: 0;
+                    right: 0;
+                    text-align: center;
+                }
+
+                .quote-section p {
+                    font-size: 18px;
+                    line-height: 1.4;
+                    font-weight: 300;
+                }
+
+                .right-panel {
+                    padding: 30px;
+                    background: white;
+                }
+
+                .header {
+                    margin-bottom: 30px;
+                }
+
+                .name {
+                    font-size: 32px;
+                    font-weight: 700;
+                    color: #FF5733;
+                    margin-bottom: 20px;
+                }
+
+                .basic-info {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 12px;
+                    margin-bottom: 30px;
+                }
+
+                .info-item {
+                    display: flex;
+                    align-items: center;
+                }
+
+                .info-label {
+                    font-weight: 600;
+                    color: #666;
+                    font-size: 11px;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    width: 80px;
+                    margin-right: 15px;
+                }
+
+                .info-value {
+                    color: #333;
+                    font-size: 14px;
+                }
+
+                .content-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 40px;
+                }
+
+                .section {
+                    margin-bottom: 30px;
+                }
+
+                .section-title {
+                    font-size: 16px;
+                    font-weight: 700;
+                    color: #FF5733;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    margin-bottom: 20px;
+                }
+
+                .motivation-bars {
+                    margin-bottom: 20px;
+                }
+
+                .motivation-item {
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 15px;
+                }
+
+                .motivation-label {
+                    font-size: 11px;
+                    font-weight: 600;
+                    color: #666;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    width: 100px;
+                    margin-right: 15px;
+                }
+
+                .progress-bar {
+                    flex: 1;
+                    height: 8px;
+                    background: #e0e0e0;
+                    border-radius: 4px;
+                    overflow: hidden;
+                }
+
+                .progress-fill {
+                    height: 100%;
+                    background: #333;
+                    border-radius: 4px;
+                }
+
+                .personality-trait {
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 15px;
+                }
+
+                .trait-label {
+                    font-size: 11px;
+                    font-weight: 600;
+                    color: #666;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    width: 80px;
+                    margin-right: 15px;
+                }
+
+                .trait-scale {
+                    flex: 1;
+                    height: 8px;
+                    background: #e0e0e0;
+                    border-radius: 4px;
+                    position: relative;
+                }
+
+                .trait-indicator {
+                    position: absolute;
+                    top: -2px;
+                    width: 12px;
+                    height: 12px;
+                    background: #333;
+                    border-radius: 50%;
+                    transform: translateX(-50%);
+                }
+
+                .trait-labels {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-top: 5px;
+                    font-size: 10px;
+                    color: #999;
+                }
+
+                .behavior-list, .frustration-list, .goals-list {
+                    list-style: none;
+                }
+
+                .behavior-list li, .frustration-list li, .goals-list li {
+                    position: relative;
+                    padding-left: 20px;
+                    margin-bottom: 15px;
+                    font-size: 14px;
+                    line-height: 1.5;
+                    color: #333;
+                }
+
+                .behavior-list li:before, .frustration-list li:before, .goals-list li:before {
+                    content: "●";
+                    position: absolute;
+                    left: 0;
+                    color: #FF5733;
+                    font-size: 16px;
+                }
+
+                .personality-tags {
+                    display: flex;
+                    gap: 10px;
+                    margin-bottom: 20px;
+                    flex-wrap: wrap;
+                }
+
+                .tag {
+                    background: #e0e0e0;
+                    padding: 8px 16px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: 500;
+                    color: #666;
+                }
+
+                .download-section {
+                    text-align: center;
+                    margin-top: 30px;
+                }
+
+                .download-btn {
+                    background-color: #4CAF50;
+                    color: white;
+                    border: none;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    cursor: pointer;
+                    text-decoration: none;
+                    display: inline-block;
+                    margin: 5px;
+                }
+
+                .back-btn {
+                    display: inline-block;
+                    margin-top: 15px;
+                    color: #FF5733;
+                    text-decoration: none;
+                    font-weight: 500;
+                    background: none;
+                    border: none;
+                    cursor: pointer;
+                    font-size: 16px;
+                }
+
+                @media (max-width: 1000px) {
+                    .persona-card {
+                        grid-template-columns: 1fr;
+                    }
+                    
+                    .content-grid {
+                        grid-template-columns: 1fr;
+                        gap: 20px;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Show the container
+            container.style.display = 'block';
+
+        }
+
+        function downloadPersona(personaId, fileType) {
+            const btn = event.target;
+            btn.innerHTML = '<span class="download-spinner"></span> Preparing...';
+            btn.disabled = true;
+            
+            window.open(`/download/${personaId}/${fileType}`, '_blank');
+            
+            // Reset button after 3 seconds
+            setTimeout(() => {
+                btn.innerHTML = fileType === 'pdf' ? 'Download as PDF' : 
+                            fileType === 'jpg' ? 'Download as Image' : 'Download as JSON';
+                btn.disabled = false;
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
