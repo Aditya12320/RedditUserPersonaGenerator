@@ -23,7 +23,7 @@ A powerful tool that generates detailed user personas from Reddit profiles by an
 
 - Python 3.8 or above
 - `pip` (Python package manager)
-- Reddit API credentials *(optional but improves accuracy)*
+- Reddit API credentials
 
 ---
 
@@ -32,8 +32,8 @@ A powerful tool that generates detailed user personas from Reddit profiles by an
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/reddit-user-persona-generator.git
-cd reddit-user-persona-generator
+git clone https://github.com/Aditya12320/RedditUserPersonaGenerator.git
+cd RedditUserPersonaGenerator
 ```
 
 ### 2. Install dependencies
@@ -108,20 +108,6 @@ reddit-user-persona-generator/
     └── 0c58670d-08d2-419d-9d25-62519d1a4543.json
 
 ```
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License**.  
-See the `LICENSE` file for details.
-
----
-
-## 🙌 Contributing
-
-Pull requests are welcome.  
-For major changes, please open an issue first to discuss what you'd like to change.
 
 ---
 
