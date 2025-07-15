@@ -1,6 +1,5 @@
 import pyppeteer
-import asyncio
-asyncio.get_event_loop().run_until_complete(pyppeteer.install())
+hti = Html2Image(browser_executable="/usr/bin/google-chrome")
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -32,7 +31,13 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Initialize HTML to image converter
 # hti = Html2Image(output_path=TEMP_DIR, size=(1600, 800))
-hti = Html2Image(browser_executable='/opt/render/project/.local-chromium/Linux-xxxx/chrome', size=(1600, 800))  # You may need to log actual path
+CHROME_PATH = "/usr/bin/google-chrome"
+hti = Html2Image(
+    output_path=TEMP_DIR,
+    size=(1600, 800),
+    browser_executable=CHROME_PATH
+)
+
 
 @app.route('/')
 def home():
