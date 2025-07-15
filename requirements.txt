@@ -10,3 +10,4 @@ huggingface_hub
 imgkit
 pdfkit
 pyppeteer
+html2text
