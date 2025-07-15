@@ -1,4 +1,3 @@
-import pyppeteer
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -30,14 +29,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Initialize HTML to image converter
-# hti = Html2Image(output_path=TEMP_DIR, size=(1600, 800))
-CHROME_PATH = "/usr/bin/google-chrome"
-hti = Html2Image(
-    output_path=TEMP_DIR,
-    size=(1600, 800),
-    browser_executable=CHROME_PATH
-)
-
+hti = Html2Image(output_path=TEMP_DIR, size=(1600, 800))
 
 @app.route('/')
 def home():
