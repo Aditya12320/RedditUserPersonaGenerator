@@ -98,41 +98,29 @@ def download(persona_id, file_type):
         return jsonify(persona_data)
     
     try:
+        # Generate HTML content
         html_content = render_template('persona_card.html', persona=persona_data)
-        html_path = os.path.join(TEMP_DIR, f'{persona_id}.html')
         
-        with open(html_path, 'w', encoding='utf-8') as f:
-            f.write(html_content)
-        
-        if file_type == 'jpg':
-            output_file = f'{persona_id}.jpg'
-            hti.screenshot(
-                html_file=html_path,
-                save_as=output_file,
-                size=(1600, 800))
-            return send_file(
-                os.path.join(TEMP_DIR, output_file),
-                as_attachment=True,
-                download_name=f"persona_{persona_id}.jpg",
-                mimetype='image/jpeg'
-            )
-        
-        elif file_type == 'pdf':
-            png_file = f'{persona_id}.png'
-            hti.screenshot(
-                html_file=html_path,
-                save_as=png_file,
-                size=(1600, 800))
-            
-            image_path = os.path.join(TEMP_DIR, png_file)
-            pdf_path = os.path.join(TEMP_DIR, f'{persona_id}.pdf')
-            
-            image = Image.open(image_path)
-            width, height = image.size
-            
-            pdf = FPDF(unit="pt", format=[width, height])
+        if file_type == 'pdf':
+            # Generate PDF directly without screenshot
+            pdf = FPDF()
             pdf.add_page()
-            pdf.image(image_path, 0, 0, width, height)
+            pdf.set_font("Arial", size=12)
+            
+            # Add basic persona info
+            pdf.cell(200, 10, txt=f"Persona: {persona_data.get('name', 'Unknown')}", ln=1)
+            pdf.cell(200, 10, txt=f"Age: {persona_data.get('age', 'Unknown')}", ln=1)
+            pdf.cell(200, 10, txt=f"Occupation: {persona_data.get('occupation', 'Unknown')}", ln=1)
+            
+            # Add sections
+            sections = ['motivations', 'behavior', 'goals', 'frustrations']
+            for section in sections:
+                if section in persona_data:
+                    pdf.cell(200, 10, txt=f"\n{section.upper()}:", ln=1)
+                    for item in persona_data[section]:
+                        pdf.multi_cell(0, 10, txt=f"- {item}")
+            
+            pdf_path = os.path.join(TEMP_DIR, f'{persona_id}.pdf')
             pdf.output(pdf_path)
             
             return send_file(
@@ -141,23 +129,59 @@ def download(persona_id, file_type):
                 download_name=f"persona_{persona_id}.pdf",
                 mimetype='application/pdf'
             )
+        
+        elif file_type == 'jpg':
+            # Create a simple image with persona data
+            img = Image.new('RGB', (800, 1200), color=(255, 255, 255))
+            d = ImageDraw.Draw(img)
+            
+            # Add text to image
+            y_position = 10
+            d.text((10, y_position), f"Persona: {persona_data.get('name', 'Unknown')}", fill=(0, 0, 0))
+            y_position += 20
+            
+            fields = ['age', 'occupation', 'location', 'archetype']
+            for field in fields:
+                if field in persona_data:
+                    d.text((10, y_position), f"{field.capitalize()}: {persona_data[field]}", fill=(0, 0, 0))
+                    y_position += 20
+            
+            # Add sections
+            sections = ['motivations', 'behavior', 'goals', 'frustrations']
+            for section in sections:
+                if section in persona_data and persona_data[section]:
+                    y_position += 20
+                    d.text((10, y_position), f"{section.upper()}:", fill=(0, 0, 0))
+                    y_position += 20
+                    for item in persona_data[section]:
+                        d.text((20, y_position), f"- {item}", fill=(0, 0, 0))
+                        y_position += 20
+            
+            img_path = os.path.join(TEMP_DIR, f'{persona_id}.jpg')
+            img.save(img_path)
+            
+            return send_file(
+                img_path,
+                as_attachment=True,
+                download_name=f"persona_{persona_id}.jpg",
+                mimetype='image/jpeg'
+            )
     
     except Exception as e:
         return f"Error generating {file_type}: {str(e)}", 500
     
     finally:
+        # Clean up temp files
         temp_files = [
-            html_path,
-            os.path.join(TEMP_DIR, f'{persona_id}.png'),
-            os.path.join(TEMP_DIR, f'{persona_id}.jpg'),
-            os.path.join(TEMP_DIR, f'{persona_id}.pdf')
+            os.path.join(TEMP_DIR, f'{persona_id}.pdf'),
+            os.path.join(TEMP_DIR, f'{persona_id}.jpg')
         ]
         for file_path in temp_files:
             try:
-                if file_path and os.path.exists(file_path):
+                if os.path.exists(file_path):
                     os.remove(file_path)
-            except Exception as e:
-                print(f"Error cleaning up {file_path}: {e}")
+            except:
+                pass
 
 @app.route('/temp_uploads/<filename>')
 def uploaded_file(filename):
