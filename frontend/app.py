@@ -1,5 +1,4 @@
 import pyppeteer
-hti = Html2Image(browser_executable="/usr/bin/google-chrome")
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -16,6 +15,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from fpdf import FPDF
 from PIL import Image
 from html2image import Html2Image
+
 from persona_template import PersonaGenerator
 from reddit_scraper import RedditScraper
 
