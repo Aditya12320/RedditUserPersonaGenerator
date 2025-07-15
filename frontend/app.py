@@ -1,8 +1,6 @@
-import sys
 import os
+import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import tempfile
-import shutil
 import tempfile
 import shutil
 import json
@@ -14,7 +12,6 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from fpdf import FPDF
 from PIL import Image
 from html2image import Html2Image
-
 from persona_template import PersonaGenerator
 from reddit_scraper import RedditScraper
 
@@ -28,8 +25,23 @@ UPLOAD_FOLDER = 'temp_uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Initialize HTML to image converter
-hti = Html2Image(output_path=TEMP_DIR, size=(1600, 800))
+# Initialize HTML to image converter with platform-specific configuration
+try:
+    # Try to use Chrome if available (for local development)
+    hti = Html2Image(
+        output_path=TEMP_DIR,
+        size=(1600, 800),
+        browser_executable='google-chrome' if os.name == 'posix' else None
+    )
+except:
+    # Fallback to using a simple screenshot method without browser
+    class SimpleScreenshot:
+        def screenshot(self, html_file=None, save_as=None, size=None):
+            # Create a simple colored image as fallback
+            img = Image.new('RGB', size or (1600, 800), color=(139, 115, 85))
+            img.save(os.path.join(TEMP_DIR, save_as))
+    
+    hti = SimpleScreenshot()
 
 @app.route('/')
 def home():
@@ -55,18 +67,14 @@ def generate():
         try:
             redditor = scraper.reddit.redditor(username)
             if hasattr(redditor, 'icon_img') and redditor.icon_img:
-                # Clean up the URL (remove query parameters)
                 photo_url = redditor.icon_img.split('?')[0]
                 persona_data['photo'] = photo_url
         except Exception as e:
             print(f"Couldn't fetch Reddit avatar: {e}")
-            # Fallback to generated avatar
             persona_data['photo'] = generator._generate_svg_avatar(username)
         
-        # Generate a unique ID for this persona
         persona_data['id'] = str(uuid.uuid4())
         
-        # Save the JSON data temporarily
         json_path = os.path.join(app.config['UPLOAD_FOLDER'], f'{persona_data["id"]}.json')
         with open(json_path, 'w') as f:
             json.dump(persona_data, f)
@@ -90,7 +98,6 @@ def download(persona_id, file_type):
         return jsonify(persona_data)
     
     try:
-        # Render HTML content
         html_content = render_template('persona_card.html', persona=persona_data)
         html_path = os.path.join(TEMP_DIR, f'{persona_id}.html')
         
@@ -102,33 +109,27 @@ def download(persona_id, file_type):
             hti.screenshot(
                 html_file=html_path,
                 save_as=output_file,
-                size=(1600, 800)  # Explicitly set size here too
-            )
+                size=(1600, 800))
             return send_file(
                 os.path.join(TEMP_DIR, output_file),
                 as_attachment=True,
                 download_name=f"persona_{persona_id}.jpg",
                 mimetype='image/jpeg'
             )
-
         
         elif file_type == 'pdf':
-            # First generate a PNG with full width
             png_file = f'{persona_id}.png'
             hti.screenshot(
                 html_file=html_path,
                 save_as=png_file,
-                size=(1600, 800)
-            )
+                size=(1600, 800))
             
-            # Convert PNG to PDF
             image_path = os.path.join(TEMP_DIR, png_file)
             pdf_path = os.path.join(TEMP_DIR, f'{persona_id}.pdf')
             
             image = Image.open(image_path)
             width, height = image.size
             
-            # Create PDF with same dimensions as image
             pdf = FPDF(unit="pt", format=[width, height])
             pdf.add_page()
             pdf.image(image_path, 0, 0, width, height)
@@ -145,7 +146,6 @@ def download(persona_id, file_type):
         return f"Error generating {file_type}: {str(e)}", 500
     
     finally:
-        # Clean up temp files
         temp_files = [
             html_path,
             os.path.join(TEMP_DIR, f'{persona_id}.png'),

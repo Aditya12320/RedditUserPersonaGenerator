@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: RedditUserPersonaGenerator
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python frontend/app.py
+    envVars:
+      - key: REDDIT_CLIENT_ID
+        fromGroup: false
+      - key: REDDIT_CLIENT_SECRET
+        fromGroup: false
+      - key: TOGETHER_API_KEY
+        fromGroup: false
