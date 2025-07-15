@@ -1,139 +1,6 @@
-# import sys
-# import os
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-# from flask import Flask, request, jsonify, send_file, render_template
-# import tempfile
-# from werkzeug.middleware.proxy_fix import ProxyFix
-# from datetime import datetime
-# from persona_template import PersonaGenerator
-# from reddit_scraper import RedditScraper
-
-# app = Flask(__name__, static_folder='static', template_folder='templates')
-# app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
-
-# @app.route('/')
-# def home():
-#     return render_template('index.html')
-
-# @app.route('/generate', methods=['GET', 'POST'])
-# def generate():
-#     if request.method == 'POST':
-#         username = request.form.get('username', '').strip()
-#         if not username:
-#             return render_template('index.html', error='Username is required')
-        
-#         try:
-#             scraper = RedditScraper()
-#             posts, comments = scraper.get_user_data(username)
-            
-#             if not posts and not comments:
-#                 return render_template('index.html', error='No data found for this user')
-            
-#             generator = PersonaGenerator()
-#             persona_text = generator.generate_persona(username, posts, comments)
-            
-#             # Parse the persona text into structured data
-#             persona = {
-#                 'username': username,
-#                 'age': 'Unknown',
-#                 'occupation': 'Unknown',
-#                 'status': 'Unknown',
-#                 'location': 'Unknown',
-#                 'tube': 'Unknown',
-#                 'archetype': 'Unknown',
-#                 'primary_traits': 'Unknown',
-#                 'secondary_traits': 'Unknown',
-#                 'motivations': [],
-#                 'behavior': [],
-#                 'goals': [],
-#                 'frustrations': [],
-#                 'quote': 'No representative quote available',
-#                 'download_filename': f"reddit_persona_{username}.txt"
-#             }
-            
-#             # Save to temporary file for download
-#             temp_dir = tempfile.gettempdir()
-#             filepath = os.path.join(temp_dir, persona['download_filename'])
-            
-#             with open(filepath, 'w', encoding='utf-8') as f:
-#                 f.write(persona_text)
-            
-#             # Parse the text format into structured data
-#             lines = persona_text.split('\n')
-#             current_section = None
-            
-#             for line in lines:
-#                 line = line.strip()
-#                 if line.startswith('#'):
-#                     persona['username'] = line[2:].strip()
-#                 elif 'AGE' in line:
-#                     parts = line.split('|')
-#                     for part in parts:
-#                         if 'AGE' in part:
-#                             persona['age'] = part.split('AGE')[1].strip()
-#                         elif 'OCCUPATION' in part:
-#                             persona['occupation'] = part.split('OCCUPATION')[1].strip()
-#                         elif 'STATUS' in part:
-#                             persona['status'] = part.split('STATUS')[1].strip()
-#                         elif 'LOCATION' in part:
-#                             persona['location'] = part.split('LOCATION')[1].strip()
-#                         elif 'TUBE' in part:
-#                             persona['tube'] = part.split('TUBE')[1].strip()
-#                         elif 'ARCHETYPE' in part:
-#                             persona['archetype'] = part.split('ARCHETYPE')[1].strip()
-#                 elif line.startswith('## ') and not line.startswith('###'):
-#                     persona['primary_traits'] = line.replace('##', '').strip()
-#                 elif line.startswith('### '):
-#                     persona['secondary_traits'] = line.replace('###', '').strip()
-#                 elif line.startswith('##'):
-#                     current_section = line.replace('##', '').strip().lower().replace(' & ', '_').replace(' ', '_')
-#                 elif line.startswith('-'):
-#                     content = line[2:].strip()
-#                     if current_section == 'motivations':
-#                         persona['motivations'].append(content)
-#                     elif current_section == 'behavior_&_habits':
-#                         persona['behavior'].append(content)
-#                     elif current_section == 'goals_&_needs':
-#                         persona['goals'].append(content)
-#                     elif current_section == 'frustrations':
-#                         persona['frustrations'].append(content)
-#                 elif line.startswith('"') and line.endswith('"'):
-#                     persona['quote'] = line[1:-1]
-#                 elif '##' in line and '---' in line:
-#                     # This is the traits section
-#                     trait_lines = line.split('##')
-#                     if len(trait_lines) >= 2:
-#                         persona['primary_traits'] = trait_lines[1].strip()
-#                     if len(trait_lines) >= 3:
-#                         persona['secondary_traits'] = trait_lines[2].strip()
-            
-#             return render_template('persona.html', persona=persona)
-            
-#         except Exception as e:
-#             return render_template('index.html', error=str(e))
-    
-#     return render_template('index.html')
-
-# @app.route('/download/<filename>')
-# def download(filename):
-#     temp_dir = tempfile.gettempdir()
-#     filepath = os.path.join(temp_dir, filename)
-    
-#     if os.path.exists(filepath):
-#         return send_file(
-#             filepath,
-#             as_attachment=True,
-#             download_name=filename,
-#             mimetype='text/plain'
-#         )
-#     return "File not found", 404
-
-# if __name__ == '__main__':
-#     app.run(host='0.0.0.0', port=5000, debug=True)
-
-
-
+import pyppeteer
+import asyncio
+asyncio.get_event_loop().run_until_complete(pyppeteer.install())
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -164,7 +31,8 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Initialize HTML to image converter
-hti = Html2Image(output_path=TEMP_DIR, size=(1600, 800))
+# hti = Html2Image(output_path=TEMP_DIR, size=(1600, 800))
+hti = Html2Image(browser_executable='/opt/render/project/.local-chromium/Linux-xxxx/chrome', size=(1600, 800))  # You may need to log actual path
 
 @app.route('/')
 def home():

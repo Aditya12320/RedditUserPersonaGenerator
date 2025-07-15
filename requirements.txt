@@ -12,3 +12,4 @@ pdfkit
 pyppeteer
 html2text
 html2image
+pyppeteer
