@@ -9,16 +9,18 @@
             padding: 0;
             font-family: 'Inter', sans-serif;
             background: white;
+            width: 1600px;
+            height: 900px;
         }
         .persona-card {
             background: white;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             overflow: visible;
-            width: 1600px;
+            min-height: 1100px; 
+            height: auto !important;
             display: grid;
             grid-template-columns: 400px 1fr;
-            min-height: 600px;
         }
         .left-panel {
             background: linear-gradient(135deg, #8B7355 0%, #A0926B 100%);
@@ -50,6 +52,8 @@
         .right-panel {
             padding: 30px;
             background: white;
+            overflow: visible !important;
+            overflow-y: auto;
         }
         .header {
             margin-bottom: 30px;
@@ -85,6 +89,7 @@
         }
         .content-grid {
             display: grid;
+            page-break-inside: avoid; /* For PDF */
             grid-template-columns: repeat(2, 1fr);
             gap: 40px;
         }
@@ -190,40 +195,16 @@
             font-weight: 500;
             color: #666;
         }
-        .download-section {
-            text-align: center;
-            margin-top: 30px;
-        }
-        .download-btn {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            margin: 5px;
-        }
-        .back-btn {
-            display: inline-block;
-            margin-top: 15px;
-            color: #FF5733;
-            text-decoration: none;
-            font-weight: 500;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-        }
     </style>
 </head>
 <body>
     <div class="persona-card">
         <div class="left-panel">
-            <img src="{{ persona.photo }}" alt="{{ persona.username }}" class="profile-image">
-            
+            <div style="height: 280px; overflow: hidden; display: flex; justify-content: center; align-items: center;">
+                <img src="{{ persona.photo }}" 
+                    alt="{{ persona.username }}" 
+                    style="width: 100%; height: auto; object-fit: cover;">
+            </div>
             <div class="quote-section">
                 <p>"{{ persona.quote }}"</p>
             </div>
@@ -351,14 +332,6 @@
                         </ul>
                     </div>
                 </div>
-            </div>
-
-            <div class="download-section">
-                <a href="/download/{{ persona.id }}/pdf" class="download-btn">Download as PDF</a>
-                <a href="/download/{{ persona.id }}/jpg" class="download-btn">Download as Image</a>
-                <a href="/download/{{ persona.id }}/json" class="download-btn">Download as JSON</a>
-                <br>
-                <a href="/" class="back-btn">← Generate another persona</a>
             </div>
         </div>
     </div>
